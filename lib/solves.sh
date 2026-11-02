@@ -6,7 +6,7 @@
 # Endpoint paths below are spike item 11; this block is the one place to change them.
 
 CASES_PATH=/api/cases
-WORKFLOW_RUN_PATH_FMT=/api/workflows/%s/run
+WORKFLOW_RUN_PATH_FMT=/api/workflows/workflow/%s/run
 WORKFLOW_EXEC_PATH_FMT=/api/workflows/executions/%s
 CONVERSE_PATH=/api/agent_builder/converse
 AD_GENERATE_PATH=/api/attack_discovery/_generate
@@ -31,7 +31,7 @@ solve_run_workflow() {
   # shellcheck disable=SC2059
   path="$(printf "$WORKFLOW_RUN_PATH_FMT" "$id")"
   kbn_api POST "$path" "$body" >/dev/null || { die solve "running $name failed"; return 1; }
-  exec_id="$(printf '%s' "$LAST_BODY" | jq -r '.workflow_execution_id // .id // empty')"
+  exec_id="$(printf '%s' "$LAST_BODY" | jq -r '.workflowExecutionId // .workflow_execution_id // .id // empty')"
   _valid_id "$exec_id" || { die solve "running $name returned no execution id ($(_last 100))"; return 1; }
   timeout="${WORKFLOW_WAIT_TIMEOUT:-180}"
   start="$SECONDS"
