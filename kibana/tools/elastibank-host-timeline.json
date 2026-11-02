@@ -1,0 +1,17 @@
+{
+  "id": "elastibank-host-timeline",
+  "type": "esql",
+  "description": "Use when you need a chronological view of process and logon activity on one host while investigating it.",
+  "tags": [
+    "elastibank"
+  ],
+  "configuration": {
+    "query": "FROM logs-endpoint.events.process-*, logs-system.security-* | WHERE host.name == ?host_name | SORT @timestamp ASC | KEEP @timestamp, event.dataset, event.action, user.name, process.name, process.command_line, source.ip | LIMIT 100",
+    "params": {
+      "host_name": {
+        "type": "string",
+        "description": "Exact host name to build the timeline for."
+      }
+    }
+  }
+}

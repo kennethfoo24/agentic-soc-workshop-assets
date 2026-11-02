@@ -1,0 +1,40 @@
+# Step and field names are the 9.5 workflow-editor names as best known; spike items 6 and 11 are authoritative.
+name: soc-autopilot
+description: Run Attack Discovery, have the built-in AI agent summarise it, open a case and notify the IR on-call.
+enabled: true
+triggers:
+  - type: manual
+steps:
+  - name: run-attack-discovery
+    type: security.attack-discovery.run
+    connector-id: __LLM_CONNECTOR_ID__
+    with:
+      alerts_index_pattern: .alerts-security.alerts-default
+      size: 100
+      start: now-72h
+      end: now
+  - name: summarise
+    type: ai.agent
+    with:
+      agent_id: elastic-ai-agent
+      message: |
+        Give a three-line triage summary of these discoveries, naming the affected hosts and their asset tier:
+        {{ steps.run-attack-discovery.output }}
+  - name: open-case
+    type: cases.createCase
+    with:
+      title: "Autopilot: Attack Discovery triage"
+      description: "{{ steps.summarise.output }}"
+      tags:
+        - autopilot
+        - Elastibank Lab
+      severity: high
+      owner: securitySolution
+  - name: notify
+    type: email
+    connector-id: __EMAIL_CONNECTOR_ID__
+    with:
+      to:
+        - ir-oncall@elastibank.example
+      subject: "[Elastibank] Autopilot opened a case"
+      message: "{{ steps.summarise.output }}"

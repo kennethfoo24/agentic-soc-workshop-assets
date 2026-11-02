@@ -1,0 +1,48 @@
+{
+  "rule_id": "elastibank-lab-03-schtask-persistence",
+  "name": "Elastibank - Scheduled task created",
+  "description": "A scheduled task was created from the command line. Scheduled tasks let code survive reboots and run on a timer.",
+  "type": "query",
+  "language": "kuery",
+  "query": "event.category : \"process\" and process.name : \"schtasks.exe\" and process.args : \"/create\"",
+  "index": [
+    "logs-endpoint.events.process-*"
+  ],
+  "from": "now-72h",
+  "to": "now",
+  "interval": "5m",
+  "enabled": true,
+  "severity": "medium",
+  "risk_score": 47,
+  "max_signals": 100,
+  "author": [
+    "Elastibank Lab"
+  ],
+  "tags": [
+    "Elastibank Lab"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0003",
+        "name": "Persistence",
+        "reference": "https://attack.mitre.org/tactics/TA0003/"
+      },
+      "technique": [
+        {
+          "id": "T1053",
+          "name": "Scheduled Task/Job",
+          "reference": "https://attack.mitre.org/techniques/T1053/",
+          "subtechnique": [
+            {
+              "id": "T1053.005",
+              "name": "Scheduled Task",
+              "reference": "https://attack.mitre.org/techniques/T1053/005/"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

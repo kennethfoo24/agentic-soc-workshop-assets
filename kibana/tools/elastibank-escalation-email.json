@@ -1,0 +1,11 @@
+{
+  "id": "elastibank-escalation-email",
+  "type": "workflow",
+  "description": "Use when a Tier 0 or Tier 1 asset is compromised and the CISO and IR on-call must be emailed within 15 minutes. Takes the host, its tier and a short summary.",
+  "tags": [
+    "elastibank"
+  ],
+  "configuration": {
+    "workflow_id": "__ESCALATION_WORKFLOW_ID__"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "rule_id": "elastibank-lab-05-domain-discovery",
+  "name": "Elastibank - Domain trust or privileged group discovery",
+  "description": "A command enumerated domain trusts or the Domain Admins group, which is how an intruder maps where to go next.",
+  "type": "query",
+  "language": "kuery",
+  "query": "event.category : \"process\" and ((process.name : \"nltest.exe\" and process.args : \"/domain_trusts\") or (process.name : \"net.exe\" and process.args : \"group\" and process.args : *domain*admins*))",
+  "index": [
+    "logs-endpoint.events.process-*"
+  ],
+  "from": "now-72h",
+  "to": "now",
+  "interval": "5m",
+  "enabled": true,
+  "severity": "low",
+  "risk_score": 21,
+  "max_signals": 100,
+  "author": [
+    "Elastibank Lab"
+  ],
+  "tags": [
+    "Elastibank Lab"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0007",
+        "name": "Discovery",
+        "reference": "https://attack.mitre.org/tactics/TA0007/"
+      },
+      "technique": [
+        {
+          "id": "T1482",
+          "name": "Domain Trust Discovery",
+          "reference": "https://attack.mitre.org/techniques/T1482/"
+        },
+        {
+          "id": "T1069",
+          "name": "Permission Groups Discovery",
+          "reference": "https://attack.mitre.org/techniques/T1069/",
+          "subtechnique": [
+            {
+              "id": "T1069.002",
+              "name": "Domain Groups",
+              "reference": "https://attack.mitre.org/techniques/T1069/002/"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

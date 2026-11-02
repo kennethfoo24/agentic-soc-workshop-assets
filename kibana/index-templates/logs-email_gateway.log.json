@@ -1,0 +1,108 @@
+{
+  "index_patterns": [
+    "logs-email_gateway.log-*"
+  ],
+  "data_stream": {},
+  "priority": 300,
+  "composed_of": [],
+  "_meta": {
+    "description": "Elastibank lab: email gateway log. email.attachments is an object, not nested, so KQL like email.attachments.file.name : *.iso works."
+  },
+  "template": {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "ecs": {
+          "properties": {
+            "version": {
+              "type": "keyword"
+            }
+          }
+        },
+        "data_stream": {
+          "properties": {
+            "type": {
+              "type": "keyword"
+            },
+            "dataset": {
+              "type": "keyword"
+            },
+            "namespace": {
+              "type": "keyword"
+            }
+          }
+        },
+        "event": {
+          "properties": {
+            "kind": {
+              "type": "keyword"
+            },
+            "category": {
+              "type": "keyword"
+            },
+            "type": {
+              "type": "keyword"
+            },
+            "dataset": {
+              "type": "keyword"
+            },
+            "action": {
+              "type": "keyword"
+            },
+            "outcome": {
+              "type": "keyword"
+            }
+          }
+        },
+        "email": {
+          "properties": {
+            "from": {
+              "properties": {
+                "address": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "to": {
+              "properties": {
+                "address": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "subject": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 512
+                }
+              }
+            },
+            "attachments": {
+              "type": "object",
+              "properties": {
+                "file": {
+                  "properties": {
+                    "name": {
+                      "type": "keyword"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "email_gateway": {
+          "properties": {
+            "verdict": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  }
+}

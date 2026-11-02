@@ -1,0 +1,17 @@
+{
+  "id": "elastibank-asset-lookup",
+  "type": "esql",
+  "description": "Use when you need an Elastibank host's tier, role or criticality, for example to decide severity or whether to escalate.",
+  "tags": [
+    "elastibank"
+  ],
+  "configuration": {
+    "query": "FROM elastibank-assets | WHERE host.name == ?host_name | KEEP host.name, host.ip, asset.tier, asset.role, asset.criticality",
+    "params": {
+      "host_name": {
+        "type": "string",
+        "description": "Exact host name, for example DC01 or WS-FIN-031."
+      }
+    }
+  }
+}

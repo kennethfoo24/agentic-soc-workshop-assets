@@ -1,0 +1,28 @@
+# Step and field names are the 9.5 workflow-editor names as best known; spike items 6 and 11 are authoritative.
+name: escalation-email
+description: Email the CISO and the IR on-call about a Tier 0 or Tier 1 compromise.
+enabled: true
+triggers:
+  - type: manual
+inputs:
+  - name: host
+    type: string
+  - name: tier
+    type: string
+  - name: summary
+    type: string
+steps:
+  - name: email-responders
+    type: email
+    connector-id: __EMAIL_CONNECTOR_ID__
+    with:
+      to:
+        - ciso@elastibank.example
+        - ir-oncall@elastibank.example
+      subject: "[Elastibank] Tier {{ inputs.tier }} compromise: {{ inputs.host }}"
+      message: |
+        A Tier {{ inputs.tier }} asset needs incident response within 15 minutes.
+
+        Host: {{ inputs.host }}
+
+        {{ inputs.summary }}

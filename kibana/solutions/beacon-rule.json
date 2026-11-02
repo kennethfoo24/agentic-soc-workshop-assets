@@ -1,0 +1,49 @@
+{
+  "rule_id": "elastibank-solution-beacon-c2",
+  "name": "Elastibank - Beacon to look-alike CDN domain",
+  "description": "A workstation resolves or connects to the look-alike CDN domain used by the intrusion for low-and-slow command and control. Found by hunting, not by a shipped rule.",
+  "type": "query",
+  "language": "kuery",
+  "query": "destination.domain : \"telemetry.azure-cdnedge.net\" or dns.question.name : \"telemetry.azure-cdnedge.net\"",
+  "index": [
+    "logs-network_traffic.*"
+  ],
+  "from": "now-72h",
+  "to": "now",
+  "interval": "5m",
+  "enabled": true,
+  "severity": "medium",
+  "risk_score": 47,
+  "max_signals": 100,
+  "author": [
+    "Elastibank Lab"
+  ],
+  "tags": [
+    "Elastibank Lab",
+    "Hunt"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0011",
+        "name": "Command and Control",
+        "reference": "https://attack.mitre.org/tactics/TA0011/"
+      },
+      "technique": [
+        {
+          "id": "T1071",
+          "name": "Application Layer Protocol",
+          "reference": "https://attack.mitre.org/techniques/T1071/",
+          "subtechnique": [
+            {
+              "id": "T1071.001",
+              "name": "Web Protocols",
+              "reference": "https://attack.mitre.org/techniques/T1071/001/"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

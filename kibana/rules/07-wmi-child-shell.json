@@ -1,0 +1,41 @@
+{
+  "rule_id": "elastibank-lab-07-wmi-child-shell",
+  "name": "Elastibank - Shell spawned by WMI provider host",
+  "description": "A command shell was started by WmiPrvSE.exe, the host process for remote WMI execution.",
+  "type": "query",
+  "language": "kuery",
+  "query": "event.category : \"process\" and process.parent.name : \"WmiPrvSE.exe\" and process.name : (\"cmd.exe\" or \"powershell.exe\")",
+  "index": [
+    "logs-endpoint.events.process-*"
+  ],
+  "from": "now-72h",
+  "to": "now",
+  "interval": "5m",
+  "enabled": true,
+  "severity": "critical",
+  "risk_score": 99,
+  "max_signals": 100,
+  "author": [
+    "Elastibank Lab"
+  ],
+  "tags": [
+    "Elastibank Lab"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0002",
+        "name": "Execution",
+        "reference": "https://attack.mitre.org/tactics/TA0002/"
+      },
+      "technique": [
+        {
+          "id": "T1047",
+          "name": "Windows Management Instrumentation",
+          "reference": "https://attack.mitre.org/techniques/T1047/"
+        }
+      ]
+    }
+  ]
+}

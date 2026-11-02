@@ -1,0 +1,63 @@
+{
+  "index_patterns": [
+    "elastibank-assets",
+    "elastibank-users"
+  ],
+  "priority": 300,
+  "_meta": {
+    "description": "Elastibank lab: lookup indices behind the asset and user ES|QL tools (usable with LOOKUP JOIN)."
+  },
+  "template": {
+    "settings": {
+      "index": {
+        "mode": "lookup"
+      }
+    },
+    "mappings": {
+      "properties": {
+        "host": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "ip": {
+              "type": "ip"
+            }
+          }
+        },
+        "asset": {
+          "properties": {
+            "tier": {
+              "type": "integer"
+            },
+            "role": {
+              "type": "keyword"
+            },
+            "criticality": {
+              "type": "keyword"
+            }
+          }
+        },
+        "user": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "full_name": {
+              "type": "keyword"
+            },
+            "department": {
+              "type": "keyword"
+            },
+            "privileged": {
+              "type": "boolean"
+            },
+            "email": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  }
+}

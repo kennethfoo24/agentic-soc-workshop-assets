@@ -1,0 +1,63 @@
+{
+  "rule_id": "elastibank-lab-02-encoded-powershell",
+  "name": "Elastibank - PowerShell launched with an encoded command",
+  "description": "PowerShell was started with a base64-encoded command. Attackers use this to hide what they run, and administrators sometimes use it too.",
+  "type": "query",
+  "language": "kuery",
+  "query": "event.category : \"process\" and event.type : \"start\" and process.name : \"powershell.exe\" and process.args : (\"-enc\" or \"-EncodedCommand\" or \"-encodedcommand\")",
+  "index": [
+    "logs-endpoint.events.process-*"
+  ],
+  "from": "now-72h",
+  "to": "now",
+  "interval": "5m",
+  "enabled": true,
+  "severity": "medium",
+  "risk_score": 47,
+  "max_signals": 100,
+  "author": [
+    "Elastibank Lab"
+  ],
+  "tags": [
+    "Elastibank Lab"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0002",
+        "name": "Execution",
+        "reference": "https://attack.mitre.org/tactics/TA0002/"
+      },
+      "technique": [
+        {
+          "id": "T1059",
+          "name": "Command and Scripting Interpreter",
+          "reference": "https://attack.mitre.org/techniques/T1059/",
+          "subtechnique": [
+            {
+              "id": "T1059.001",
+              "name": "PowerShell",
+              "reference": "https://attack.mitre.org/techniques/T1059/001/"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0005",
+        "name": "Defense Evasion",
+        "reference": "https://attack.mitre.org/tactics/TA0005/"
+      },
+      "technique": [
+        {
+          "id": "T1027",
+          "name": "Obfuscated Files or Information",
+          "reference": "https://attack.mitre.org/techniques/T1027/"
+        }
+      ]
+    }
+  ]
+}

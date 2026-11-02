@@ -1,0 +1,17 @@
+{
+  "id": "elastibank-user-lookup",
+  "type": "esql",
+  "description": "Use when you need to know who an Elastibank user account belongs to, their department, email and whether it is privileged.",
+  "tags": [
+    "elastibank"
+  ],
+  "configuration": {
+    "query": "FROM elastibank-users | WHERE user.name == ?user_name | KEEP user.name, user.full_name, user.department, user.privileged, user.email",
+    "params": {
+      "user_name": {
+        "type": "string",
+        "description": "Exact account name, for example svc_backup."
+      }
+    }
+  }
+}

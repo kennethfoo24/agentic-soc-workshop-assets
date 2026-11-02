@@ -1,0 +1,63 @@
+{
+  "rule_id": "elastibank-lab-06-svc-account-workstation-logon",
+  "name": "Elastibank - Service account network logon from a workstation",
+  "description": "A service account (svc_*) logged on over the network from the workstation subnet. Service accounts normally authenticate from servers.",
+  "type": "query",
+  "language": "kuery",
+  "query": "event.code : \"4624\" and winlog.logon.type : \"Network\" and user.name : svc_* and source.ip : \"10.10.20.0/24\"",
+  "index": [
+    "logs-system.security-*"
+  ],
+  "from": "now-72h",
+  "to": "now",
+  "interval": "5m",
+  "enabled": true,
+  "severity": "high",
+  "risk_score": 73,
+  "max_signals": 100,
+  "author": [
+    "Elastibank Lab"
+  ],
+  "tags": [
+    "Elastibank Lab"
+  ],
+  "threat": [
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0008",
+        "name": "Lateral Movement",
+        "reference": "https://attack.mitre.org/tactics/TA0008/"
+      },
+      "technique": [
+        {
+          "id": "T1021",
+          "name": "Remote Services",
+          "reference": "https://attack.mitre.org/techniques/T1021/"
+        }
+      ]
+    },
+    {
+      "framework": "MITRE ATT&CK",
+      "tactic": {
+        "id": "TA0001",
+        "name": "Initial Access",
+        "reference": "https://attack.mitre.org/tactics/TA0001/"
+      },
+      "technique": [
+        {
+          "id": "T1078",
+          "name": "Valid Accounts",
+          "reference": "https://attack.mitre.org/techniques/T1078/",
+          "subtechnique": [
+            {
+              "id": "T1078.002",
+              "name": "Domain Accounts",
+              "reference": "https://attack.mitre.org/techniques/T1078/002/"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
