@@ -1,5 +1,6 @@
 {
   "securitySolution:enableAttackDiscoveryWorkflows": true,
   "genAiSettings:defaultAIConnector": "__LLM_CONNECTOR_ID__",
-  "timepicker:timeDefaults": "{\"from\":\"now-7d\",\"to\":\"now\"}"
+  "timepicker:timeDefaults": "{\"from\":\"now-7d\",\"to\":\"now\"}",
+  "securitySolution:timeDefaults": "{\"from\":\"now-7d\",\"to\":\"now\"}"
 }
