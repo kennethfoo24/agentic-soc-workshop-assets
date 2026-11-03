@@ -54,10 +54,15 @@ solve_run_workflow() {
 }
 
 solve_run_attack_discovery() {
-  local body timeout start
+  local body timeout start fields
   find_llm_connector || return 1
-  body="$(jq -nc --arg c "$LLM_CONNECTOR_ID" '{
-    alertsIndexPattern: ".alerts-security.alerts-default", anonymizationFields: [],
+  # The generate call requires anonymizationFields; the docs fetch them from the AI Assistant API first.
+  fields='[]'
+  if kbn_api GET "/api/security_ai_assistant/anonymization_fields/_find?per_page=1000" >/dev/null 2>&1; then
+    fields="$(printf '%s' "$LAST_BODY" | jq -c '.data // []' 2>/dev/null)" || fields='[]'
+  fi
+  body="$(jq -nc --arg c "$LLM_CONNECTOR_ID" --argjson f "$fields" '{
+    alertsIndexPattern: ".alerts-security.alerts-default", anonymizationFields: $f,
     apiConfig: {connectorId: $c, actionTypeId: ".gen-ai"}, subAction: "invokeAI", size: 100, start: "now-72h", end: "now"}')"
   if ! CURL_MAX_TIME=120 kbn_api POST "$AD_GENERATE_PATH" "$body" >/dev/null; then
     # The generate call's body is not in the public docs. The autopilot workflow's first step runs Attack Discovery too.
@@ -103,5 +108,26 @@ solve_create_rule() {
   if ! QUIET_STATUS=409 kbn_api POST "$RULES_PATH" "@$file" >/dev/null; then
     [ "$LAST_STATUS" = "409" ] || { die solve "creating the rule from $(basename "$file") failed"; return 1; }
     kbn_api PUT "$RULES_PATH" "@$file" >/dev/null || { die solve "updating the rule from $(basename "$file") failed"; return 1; }
+  fi
+}
+
+# solve_assert_esql <label> <min-rows> <max-rows> <query> [<needle>]: runs a query printed in a lesson against the live data
+# and fails unless it returns min..max rows (and, when given, a value containing <needle>). A lesson query that returns
+# nothing is a bug in the lesson or the data, so `instruqt track test` must catch it.
+solve_assert_esql() {
+  local label="$1" min="$2" max="$3" query="$4" needle="${5:-}" body n
+  body="$(jq -nc --arg q "$query" '{query: $q}')"
+  if ! es_api POST "/_query" "$body" >/dev/null; then
+    die solve "lesson query '$label' failed: $(_last 300)"
+    return 1
+  fi
+  n="$(printf '%s' "$LAST_BODY" | jq '.values | length')"
+  if [ "$n" -lt "$min" ] || [ "$n" -gt "$max" ]; then
+    die solve "lesson query '$label' returned $n rows, expected $min..$max"
+    return 1
+  fi
+  if [ -n "$needle" ] && ! printf '%s' "$LAST_BODY" | jq -e --arg n "$needle" '[.values[][] | strings | select(contains($n))] | length > 0' >/dev/null; then
+    die solve "lesson query '$label' did not return a value containing '$needle'"
+    return 1
   fi
 }

@@ -15,16 +15,16 @@ steps:
       end: now
   - name: summarise
     type: ai.agent
+    agent-id: elastic-ai-agent
     with:
-      agent_id: elastic-ai-agent
       message: |
-        Give a three-line triage summary of these discoveries, naming the affected hosts and their asset tier:
-        {{ steps.run-attack-discovery.output }}
+        Give a three-line triage summary of these Attack Discovery results, naming the affected hosts and users:
+        {{ steps.run-attack-discovery.output | json }}
   - name: open-case
     type: cases.createCase
     with:
       title: "Autopilot: Attack Discovery triage"
-      description: "{{ steps.summarise.output }}"
+      description: "{{ steps.summarise.output.message }}"
       tags:
         - autopilot
         - Elastibank Lab
@@ -37,4 +37,4 @@ steps:
       to:
         - ir-oncall@elastibank.example
       subject: "[Elastibank] Autopilot opened a case"
-      message: "{{ steps.summarise.output }}"
+      message: "{{ steps.summarise.output.message }}"

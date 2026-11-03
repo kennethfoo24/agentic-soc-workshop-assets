@@ -48,7 +48,12 @@ check_case_tagged() {
   local tag="$1" n
   _chk_fetch "$CASES_FIND_PATH?tags=$(_urlenc "$tag")&perPage=100" "the cases" || return 1
   n="$(printf '%s' "$LAST_BODY" | jq '.total // 0')"
-  [ "$n" -ge 1 ] && return 0
+  if [ "$n" -ge 1 ]; then
+    # A case whose description is "[object Object]" means a workflow template printed a whole step output.
+    printf '%s' "$LAST_BODY" | jq -e '[.cases[]? | select((.description // "") | contains("[object Object]"))] | length == 0' >/dev/null && return 0
+    check_fail "The case tagged '$tag' has an unreadable description ([object Object]). Run soc-autopilot again."
+    return 1
+  fi
   check_fail "No case tagged '$tag' yet. Open Workflows, run soc-autopilot, wait until all four steps have finished, then press Check again."
 }
 
