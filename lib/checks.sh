@@ -100,7 +100,7 @@ check_agent_wired() {
     problems="$problems the skill '$skill' is not attached;"
   fi
   for tool in "$@"; do
-    if [ "$(printf '%s' "$LAST_BODY" | jq --arg t "$tool" '[.configuration.tool_ids[]?] | index($t) != null')" != "true" ]; then
+    if [ "$(printf '%s' "$LAST_BODY" | jq --arg t "$tool" '[.configuration.tools[]?.tool_ids[]?] | index($t) != null')" != "true" ]; then
       missing="$missing $tool"
     fi
   done

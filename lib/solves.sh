@@ -56,9 +56,14 @@ solve_run_workflow() {
 solve_run_attack_discovery() {
   local body timeout start
   find_llm_connector || return 1
-  body="$(jq -nc --arg c "$LLM_CONNECTOR_ID" \
-    '{connector_id: $c, alerts_index_pattern: ".alerts-security.alerts-default", size: 100, start: "now-72h", end: "now"}')"
-  CURL_MAX_TIME=120 kbn_api POST "$AD_GENERATE_PATH" "$body" >/dev/null || { die solve "starting Attack Discovery failed"; return 1; }
+  body="$(jq -nc --arg c "$LLM_CONNECTOR_ID" '{
+    alertsIndexPattern: ".alerts-security.alerts-default", anonymizationFields: [],
+    apiConfig: {connector_id: $c, action_type_id: ".gen-ai"}, size: 100, start: "now-72h", end: "now"}')"
+  if ! CURL_MAX_TIME=120 kbn_api POST "$AD_GENERATE_PATH" "$body" >/dev/null; then
+    # The generate call's body is not in the public docs. The autopilot workflow's first step runs Attack Discovery too.
+    log "generate call rejected (HTTP ${LAST_STATUS:-none}: $(printf '%s' "$LAST_BODY" | head -c 300)); running soc-autopilot instead"
+    solve_run_workflow soc-autopilot || return 1
+  fi
   timeout="${AD_WAIT_TIMEOUT:-240}"
   start="$SECONDS"
   while [ "$(_ad_count)" -lt 1 ]; do
