@@ -7,8 +7,7 @@
 CASES_FIND_PATH=/api/cases/_find
 CONVERSATIONS_PATH=/api/agent_builder/conversations
 RULES_FIND_PATH=/api/detection_engine/rules/_find
-# Scheduled and ad hoc discoveries are stored in different hidden indices (the ad hoc one starts with .adhoc.).
-AD_INDEX='.alerts-security.attack.discovery.alerts-*,.adhoc.alerts-security.attack.discovery.alerts-*'
+ATTACK_DISCOVERY_FIND_PATH=/api/attack_discovery/_find   # live-confirmed: {data, total, page, per_page, ...}
 MAILPIT_URL="${MAILPIT_URL:-http://127.0.0.1:8025}"
 
 _CHK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -110,10 +109,10 @@ check_agent_wired() {
   check_fail "Agent '$agent' is not finished:${problems%;}. Open the agent, fix this and save."
 }
 
-# _ad_count: how many Attack Discoveries exist (0 when the index is not there yet).
+# _ad_count: how many Attack Discoveries exist, scheduled or ad hoc (0 when the call fails).
 _ad_count() {
-  if QUIET_STATUS=404 es_api GET "/$AD_INDEX/_count?expand_wildcards=all&ignore_unavailable=true&allow_no_indices=true" >/dev/null 2>&1; then
-    printf '%s' "$LAST_BODY" | jq '.count // 0'
+  if kbn_api GET "$ATTACK_DISCOVERY_FIND_PATH?per_page=1" >/dev/null 2>&1; then
+    printf '%s' "$LAST_BODY" | jq '.total // 0' 2>/dev/null || echo 0
   else
     echo 0
   fi
@@ -138,7 +137,7 @@ check_mail_to() {
     check_fail "Could not open the mail inbox. Wait a moment and press Check again."
     return 1
   fi
-  n="$(printf '%s' "$out" | jq '.messages_count // 0' 2>/dev/null)" || n=0
+  n="$(printf '%s' "$out" | jq '(.messages_count // (.messages | length) // 0)' 2>/dev/null)" || n=0
   [ "$n" -ge 1 ] && return 0
   check_fail "No email to $address in the inbox yet. Ask the agent to escalate, wait a few seconds, open the Mailpit tab to look, then press Check again."
 }

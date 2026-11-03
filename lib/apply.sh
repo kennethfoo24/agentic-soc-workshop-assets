@@ -54,10 +54,21 @@ _valid_id() { [ -n "$1" ] && [ "$1" != "null" ]; }
 _last() { printf 'last answer: HTTP %s %s' "${LAST_STATUS:-none}" "$(printf '%s' "$LAST_BODY" | head -c "$1")"; }
 
 # _upsert <collection-path> <id> <json-body>: POST, and on 409 PUT <collection-path>/<id> without the id.
+# "Already exists" is a 409 for most objects but a 400 whose message says so for agents (seen live); anything else
+# is an error, and its body is shown.
 _upsert() {
   local path="$1" id="$2" body="$3"
-  QUIET_STATUS=409 kbn_api POST "$path" "$body" >/dev/null && return 0
-  [ "$LAST_STATUS" = "409" ] || return 1
+  QUIET_STATUS=409,400 kbn_api POST "$path" "$body" >/dev/null && return 0
+  case "$LAST_STATUS" in
+    409) ;;
+    400)
+      if ! printf '%s' "$LAST_BODY" | grep -qi "already exists"; then
+        printf 'ERROR: HTTP 400 POST %s: %s\n' "$path" "$(printf '%s' "$LAST_BODY" | head -c 600)" >&2
+        return 1
+      fi
+      ;;
+    *) return 1 ;;
+  esac
   kbn_api PUT "$path/$id" "$(printf '%s' "$body" | jq -c 'del(.id)')" >/dev/null
 }
 
