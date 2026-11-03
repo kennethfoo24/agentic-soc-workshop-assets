@@ -7,7 +7,8 @@
 CASES_FIND_PATH=/api/cases/_find
 CONVERSATIONS_PATH=/api/agent_builder/conversations
 RULES_FIND_PATH=/api/detection_engine/rules/_find
-AD_INDEX='.alerts-security.attack.discovery.alerts-*'
+# Scheduled and ad hoc discoveries are stored in different hidden indices (the ad hoc one starts with .adhoc.).
+AD_INDEX='.alerts-security.attack.discovery.alerts-*,.adhoc.alerts-security.attack.discovery.alerts-*'
 MAILPIT_URL="${MAILPIT_URL:-http://127.0.0.1:8025}"
 
 _CHK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -111,7 +112,7 @@ check_agent_wired() {
 
 # _ad_count: how many Attack Discoveries exist (0 when the index is not there yet).
 _ad_count() {
-  if QUIET_STATUS=404 es_api GET "/$AD_INDEX/_count" >/dev/null 2>&1; then
+  if QUIET_STATUS=404 es_api GET "/$AD_INDEX/_count?expand_wildcards=all&ignore_unavailable=true&allow_no_indices=true" >/dev/null 2>&1; then
     printf '%s' "$LAST_BODY" | jq '.count // 0'
   else
     echo 0
