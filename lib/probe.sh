@@ -27,6 +27,19 @@ probe_environment() {
     log "probe: no env file at $file"
   fi
   load_env "$file" >/dev/null 2>&1 || { log "probe: could not load the environment, stopping the probe"; return 0; }
+  # Where is Kibana reachable from outside? (credentials in a URL are redacted)
+  local name value
+  for name in KIBANA_URL KIBANA_URL_UI KIBANA_URL_LOCAL KIBANA_URL_ELASTIC_LAB ELASTICSEARCH_URL; do
+    eval "value=\"\${$name:-}\""
+    log "probe: $name=$(printf '%s' "$value" | sed -E 's#(://)[^/@]*@#\1***@#')"
+  done
+  log "probe: listening ports: $( (ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null) | awk 'NR>1 {n=split($4,a,":"); print a[n]}' | sort -un | tr '\n' ' ')"
+  if command -v kubectl >/dev/null 2>&1; then
+    log "probe: kubernetes services: $(kubectl get svc -A --no-headers 2>&1 | awk '{print $1"/"$2" "$3" "$5}' | tr '\n' ';' | cut -c1-1500)"
+    log "probe: kubernetes ingress: $(kubectl get ingress -A --no-headers 2>&1 | tr -s ' ' | tr '\n' ';' | cut -c1-800)"
+  else
+    log "probe: kubernetes services: kubectl not available"
+  fi
   local line
   while IFS= read -r line; do
     log "probe: $line"
