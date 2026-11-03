@@ -125,7 +125,7 @@ check_attack_discovery_exists() {
 
 check_conversation_with() {
   local agent="$1" n
-  _chk_fetch "$CONVERSATIONS_PATH?per_page=100" "your conversations" || return 1
+  _chk_fetch "$CONVERSATIONS_PATH" "your conversations" || return 1
   n="$(printf '%s' "$LAST_BODY" | jq --arg a "$agent" '[.results[]? | select(.agent_id == $a)] | length')"
   [ "$n" -ge 1 ] && return 0
   check_fail "No conversation with the agent '$agent' found. Open the agent chat, choose '$agent' (not the default agent) and send the prompt from the challenge."
