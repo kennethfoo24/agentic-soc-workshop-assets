@@ -33,7 +33,7 @@ solve_run_workflow() {
   kbn_api POST "$path" "$body" >/dev/null || { die solve "running $name failed"; return 1; }
   exec_id="$(printf '%s' "$LAST_BODY" | jq -r '.workflowExecutionId // .workflow_execution_id // .id // empty')"
   _valid_id "$exec_id" || { die solve "running $name returned no execution id ($(_last 100))"; return 1; }
-  timeout="${WORKFLOW_WAIT_TIMEOUT:-180}"
+  timeout="${WORKFLOW_WAIT_TIMEOUT:-420}"
   start="$SECONDS"
   while :; do
     # shellcheck disable=SC2059
