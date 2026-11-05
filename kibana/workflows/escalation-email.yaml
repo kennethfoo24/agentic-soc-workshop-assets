@@ -4,13 +4,19 @@ description: Email the CISO and the IR on-call about a Tier 0 or Tier 1 compromi
 enabled: true
 triggers:
   - type: manual
-inputs:
-  - name: host
-    type: string
-  - name: tier
-    type: string
-  - name: summary
-    type: string
+    inputs:
+      - name: host
+        type: string
+        description: The name of the compromised host
+        required: true
+      - name: tier
+        type: string
+        description: The host's asset tier, 0 or 1
+        required: true
+      - name: summary
+        type: string
+        description: Two or three sentences on what happened and what has been affected
+        required: true
 steps:
   - name: email-responders
     type: email

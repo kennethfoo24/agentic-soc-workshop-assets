@@ -12,13 +12,26 @@ steps:
       size: 100
       start: now-7d
       end: now
+  # The run step only returns {execution_uuid, status: pending}, even in sync mode (it waits briefly, not for
+  # the whole LLM run). Wait for generation to finish, then fetch the discoveries by that uuid.
+  - name: wait-for-generation
+    type: wait
+    with:
+      duration: 2m
+  - name: fetch-discoveries
+    type: kibana.request
+    with:
+      method: GET
+      path: /api/attack_discovery/generations/{{ steps.run-attack-discovery.output.execution_uuid }}
   - name: summarise
     type: ai.agent
     agent-id: elastic-ai-agent
     with:
       message: |
-        Give a three-line triage summary of these Attack Discovery results, naming the affected hosts and users:
-        {{ steps.run-attack-discovery.output | json }}
+        Give a three-line triage summary of these Attack Discovery results, naming the affected hosts and users.
+        The discoveries are in the data array. If it is empty or generation.status is not succeeded, say so plainly.
+        Answer only from the data below. Do not call any tools.
+        {{ steps.fetch-discoveries.output | json }}
   - name: open-case
     type: cases.createCase
     with:

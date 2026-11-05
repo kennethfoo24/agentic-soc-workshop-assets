@@ -75,6 +75,9 @@ bootstrap_all() {
   _step_done 1 "kibana ready"
 
   "$ELASTIC_VIEW_SH" -v security || die view "elastic-view.sh failed"
+  # Belt and braces: pin the default space to the Security view so the menu matches the guide's screenshots.
+  QUIET_STATUS=400,404 kbn_api PUT /api/spaces/space/default \
+    '{"id":"default","name":"Default","solution":"security"}' >/dev/null 2>&1 || log "could not pin the Security view; continuing"
   _step_done 2 "security view"
 
   "$ELASTIC_LLM_SH" -m "$LLM_MODEL" -k false || die llm "elastic-llm.sh failed; the lab's AI cannot work, stopping"
