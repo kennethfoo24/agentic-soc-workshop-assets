@@ -7,6 +7,17 @@
     "tools": [
       {
         "tool_ids": [
+          "platform.core.search",
+          "platform.core.list_indices",
+          "platform.core.get_index_mapping",
+          "platform.core.generate_esql",
+          "platform.core.execute_esql",
+          "platform.core.get_document_by_id",
+          "platform.core.get_workflow_execution_status",
+          "platform.core.resume_workflow_execution",
+          "platform.core.list_workflow_executions",
+          "platform.core.generate_workflow",
+          "platform.core.execute_workflow",
           "elastibank-asset-lookup",
           "elastibank-user-lookup",
           "elastibank-host-timeline",

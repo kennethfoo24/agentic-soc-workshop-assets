@@ -1,6 +1,7 @@
 """ECS document builders. Each returns (data_stream, source) so callers can route docs to a stream."""
 from __future__ import annotations
 
+import ipaddress
 import shlex
 from datetime import datetime, timezone
 
@@ -35,7 +36,17 @@ def _split_args(command_line: str) -> list[str]:
 
 
 def _host(h: Host) -> dict:
-    return {"name": h.name, "ip": [h.ip], "os": {"type": h.os}}
+    return {"name": h.name, "ip": [h.ip], "os": {"type": h.os}, "type": "workstation" if h.tier == 2 else "server"}
+
+
+_RFC1918 = tuple(ipaddress.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
+
+
+def _direction(dest_ip: str) -> str:
+    # Not ip.is_private: Python counts the documentation ranges (198.51.100.0/24, 203.0.113.0/24) the lab uses for
+    # internet addresses, the C2 among them, as private.
+    addr = ipaddress.ip_address(dest_ip)
+    return "internal" if any(addr in n for n in _RFC1918) else "egress"
 
 
 def process_start(
@@ -103,7 +114,7 @@ def network_flow(
     doc["host"] = _host(host)
     doc["source"] = {"ip": host.ip, "bytes": bytes_out}
     doc["destination"] = {"ip": dest_ip, "port": dest_port, "domain": domain, "bytes": bytes_in}
-    doc["network"] = {"transport": "tcp", "bytes": bytes_out + bytes_in}
+    doc["network"] = {"transport": "tcp", "bytes": bytes_out + bytes_in, "direction": _direction(dest_ip)}
     return stream, doc
 
 

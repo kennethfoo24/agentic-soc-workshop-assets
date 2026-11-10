@@ -37,8 +37,8 @@ probe_environment() {
   log "probe: kibana on local 443 -> HTTP $(curl -sk -m 8 -o /dev/null -w '%{http_code}' https://127.0.0.1:443/ 2>/dev/null || echo none)"
   log "probe: listening ports: $( (ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null) | awk 'NR>1 {n=split($4,a,":"); print a[n]}' | sort -un | tr '\n' ' ')"
   if command -v kubectl >/dev/null 2>&1; then
-    log "probe: kubernetes service ports: $(kubectl get svc -A --no-headers 2>&1 | awk '{print $1"/"$2" "$3" "$6}' | tr '\n' ';' | cut -c1-1800)"
-    log "probe: kubernetes ingress: $(kubectl get ingress -A --no-headers 2>&1 | tr -s ' ' | tr '\n' ';' | cut -c1-800)"
+    log "probe: kubernetes service ports: $(kubectl --request-timeout=5s get svc -A --no-headers 2>&1 | awk '{print $1"/"$2" "$3" "$6}' | tr '\n' ';' | cut -c1-1800)"
+    log "probe: kubernetes ingress: $(kubectl --request-timeout=5s get ingress -A --no-headers 2>&1 | tr -s ' ' | tr '\n' ';' | cut -c1-800)"
   else
     log "probe: kubernetes services: kubectl not available"
   fi

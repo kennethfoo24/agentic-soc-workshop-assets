@@ -1,4 +1,3 @@
-# Step and field names are the 9.5 workflow-editor names as best known; spike items 6 and 11 are authoritative.
 name: escalation-email
 description: Email the CISO and the IR on-call about a Tier 0 or Tier 1 compromise.
 enabled: true
