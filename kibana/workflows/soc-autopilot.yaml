@@ -12,26 +12,39 @@ steps:
       size: 100
       start: now-7d
       end: now
-  # The run step only returns {execution_uuid, status: pending}, even in sync mode (it waits briefly, not for
-  # the whole LLM run). Wait for generation to finish, then fetch the discoveries by that uuid.
-  - name: wait-for-generation
-    type: wait
-    with:
-      duration: 2m
-  - name: fetch-discoveries
-    type: kibana.request
-    with:
-      method: GET
-      path: /api/attack_discovery/generations/{{ steps.run-attack-discovery.output.execution_uuid }}
+  # The run step returns only a run ID, so poll until this run's attack stories are saved.
+  - name: wait-for-discoveries
+    type: while
+    max-iterations: 20
+    condition: "${{ steps.fetch-discoveries.output.hits.total.value == 0 }}"
+    steps:
+      - name: pause
+        type: wait
+        with:
+          duration: 15s
+      - name: fetch-discoveries
+        type: elasticsearch.search
+        with:
+          index: .adhoc.alerts-security.attack.discovery.alerts-default
+          size: 10
+          query:
+            term:
+              kibana.alert.rule.execution.uuid: "{{ steps.run-attack-discovery.output.execution_uuid }}"
+          _source:
+            - kibana.alert.attack_discovery.title_with_replacements
+            - kibana.alert.attack_discovery.summary_markdown_with_replacements
+            - kibana.alert.attack_discovery.entity_summary_markdown_with_replacements
+            - kibana.alert.attack_discovery.mitre_attack_tactics
+            - kibana.alert.risk_score
   - name: summarise
     type: ai.agent
     agent-id: elastic-ai-agent
     with:
       message: |
         Give a three-line triage summary of these Attack Discovery results, naming the affected hosts and users.
-        The discoveries are in the data array. If it is empty or generation.status is not succeeded, say so plainly.
+        If the list is empty, say Attack Discovery found nothing yet.
         Answer only from the data below. Do not call any tools.
-        {{ steps.fetch-discoveries.output | json }}
+        {{ steps.fetch-discoveries.output.hits.hits | json }}
   - name: open-case
     type: cases.createCase
     with:
