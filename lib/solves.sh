@@ -33,7 +33,7 @@ solve_run_workflow() {
   kbn_api POST "$path" "$body" >/dev/null || { die solve "running $name failed"; return 1; }
   exec_id="$(printf '%s' "$LAST_BODY" | jq -r '.workflowExecutionId // .workflow_execution_id // .id // empty')"
   _valid_id "$exec_id" || { die solve "running $name returned no execution id ($(_last 100))"; return 1; }
-  timeout="${WORKFLOW_WAIT_TIMEOUT:-420}"
+  timeout="${WORKFLOW_WAIT_TIMEOUT:-900}"
   start="$SECONDS"
   while :; do
     # shellcheck disable=SC2059
@@ -42,10 +42,11 @@ solve_run_workflow() {
       status="$(printf '%s' "$LAST_BODY" | jq -r '.status // empty')"
       case "$status" in
         completed) return 0 ;;
-        failed | cancelled | timed_out) die solve "workflow $name ended as $status ($(_last 200))"; return 1 ;;
+        failed | cancelled | timed_out) echo "workflow $name ended as $status: $(_last 400)"; die solve "workflow $name ended as $status ($(_last 200))"; return 1 ;;
       esac
     fi
     if [ $((SECONDS - start)) -ge "$timeout" ]; then
+      echo "workflow $name did not finish within ${timeout}s: status=${status:-unknown} $(_last 300)"
       die solve "workflow $name did not finish within ${timeout}s ($(_last 100))"
       return 1
     fi
